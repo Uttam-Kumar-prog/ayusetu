@@ -10,6 +10,7 @@ const {
 } = require('../controllers/authController');
 const { protect } = require('../middleware/auth');
 const validate = require('../middleware/validate');
+const validateAuth = require('../middleware/validateAuth');
 const router = express.Router();
 
 router.post(
@@ -25,7 +26,7 @@ router.post(
     }
     return true;
   }),
-  validate,
+  validateAuth,
   register
 );
 
@@ -40,7 +41,7 @@ router.post(
     }
     return true;
   }),
-  validate,
+  validateAuth,
   login
 );
 

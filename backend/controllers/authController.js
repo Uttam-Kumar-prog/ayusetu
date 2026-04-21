@@ -49,7 +49,7 @@ exports.register = asyncHandler(async (req, res) => {
   });
 
   if (existing) {
-    throw new ApiError(409, 'User already exists with given email or phone');
+    throw new ApiError(409, 'Registration failed. Please try again.');
   }
 
   const user = await User.create({
@@ -77,7 +77,7 @@ exports.login = asyncHandler(async (req, res) => {
   const normalizedPhone = phone ? String(phone).trim() : undefined;
 
   if ((!email && !phone) || !password) {
-    throw new ApiError(400, 'Email or phone and password are required');
+    throw new ApiError(401, 'Invalid credentials');
   }
 
   const user = await User.findOne({
@@ -92,7 +92,7 @@ exports.login = asyncHandler(async (req, res) => {
   }
 
   if (!user.password) {
-    throw new ApiError(400, 'Password login is not enabled for this account. Use OTP login.');
+    throw new ApiError(401, 'Invalid credentials');
   }
 
   const isMatch = await user.comparePassword(password);

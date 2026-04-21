@@ -24,9 +24,9 @@ export default function Login() {
     license: "" // Extra field for doctors
   });
 
-  const extractApiError = (error, fallback) => {
-    const validationMessage = error?.response?.data?.errors?.[0]?.message;
-    return validationMessage || error?.response?.data?.message || fallback;
+  const AUTH_FAILURE_MESSAGES = {
+    login: 'Login failed. Please check your credentials.',
+    register: 'Registration failed. Please try again.',
   };
 
   const handleChange = (e) => {
@@ -59,7 +59,7 @@ export default function Login() {
          const user = login({ token: data?.token, user: data?.user });
          navigate(location.state?.from || getRedirectForRole(user?.role || role));
       } catch (error) {
-         setErrorMessage(extractApiError(error, 'Login failed. Please check your credentials.'));
+         setErrorMessage(AUTH_FAILURE_MESSAGES.login);
       } finally {
          setIsSubmitting(false);
       }
@@ -72,18 +72,12 @@ export default function Login() {
       setErrorMessage('');
 
       try {
-         if (!String(formData.name || '').trim()) {
-           setErrorMessage('Full Name is required.');
-           setIsSubmitting(false);
-           return;
-         }
-         if (!String(formData.email || '').trim()) {
-           setErrorMessage('Email is required.');
-           setIsSubmitting(false);
-           return;
-         }
-         if (!String(formData.password || '').trim()) {
-           setErrorMessage('Password is required.');
+         if (
+           !String(formData.name || '').trim() ||
+           !String(formData.email || '').trim() ||
+           !String(formData.password || '').trim()
+         ) {
+           setErrorMessage(AUTH_FAILURE_MESSAGES.register);
            setIsSubmitting(false);
            return;
          }
@@ -98,7 +92,7 @@ export default function Login() {
          const user = login({ token: data?.token, user: data?.user });
          navigate(getRedirectForRole(user?.role || role));
       } catch (error) {
-         setErrorMessage(extractApiError(error, 'Registration failed. Please try again.'));
+         setErrorMessage(AUTH_FAILURE_MESSAGES.register);
       } finally {
          setIsSubmitting(false);
       }
