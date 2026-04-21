@@ -52,7 +52,10 @@ exports.createSession = asyncHandler(async (req, res) => {
 });
 
 exports.listMySessions = asyncHandler(async (req, res) => {
-  const query = req.user.role === 'doctor' ? { doctorId: req.user._id } : { patientId: req.user._id };
+  let query = { patientId: req.user._id };
+  if (req.user.role === 'doctor') query = { doctorId: req.user._id };
+  if (req.user.role === 'admin') query = {};
+
   const sessions = await ChatSession.find(query).sort({ updatedAt: -1 });
   return res.json({ success: true, count: sessions.length, sessions });
 });

@@ -35,7 +35,10 @@ exports.createPrescription = asyncHandler(async (req, res) => {
 });
 
 exports.getMyPrescriptions = asyncHandler(async (req, res) => {
-  const query = req.user.role === 'doctor' ? { doctorId: req.user._id } : { patientId: req.user._id };
+  let query = { patientId: req.user._id };
+  if (req.user.role === 'doctor') query = { doctorId: req.user._id };
+  if (req.user.role === 'admin') query = {};
+
   const prescriptions = await Prescription.find(query)
     .populate('doctorId', 'fullName doctorProfile.specialty')
     .sort({ createdAt: -1 });

@@ -15,7 +15,9 @@ import Dashboard from "./pages/Dashboard";
 import Login from "./pages/Login";
 import About from "./pages/About";
 import KnowledgeBase from "./pages/KnowledgeBase";
+import Services from "./pages/Services";
 import DoctorDashboard from "./pages/DoctorDashboard";
+import AdminDashboard from "./pages/AdminDashboard";
 import DoctorList from "./pages/DoctorList";       // <--- NEW
 import DoctorProfile from "./pages/DoctorProfile"; // <--- NEW
 import ConsultationRoom from "./pages/ConsultationRoom";
@@ -87,6 +89,14 @@ function App() {
             }
           />
           <Route
+            path="/admin-dashboard"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <AdminDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
             path="/consultation/:roomId"
             element={
               <ProtectedRoute roles={["patient", "doctor", "admin"]}>
@@ -96,6 +106,14 @@ function App() {
           />
           
           {/* Informational Pages */}
+          <Route
+            path="/services"
+            element={
+              <ProtectedRoute roles={["admin"]}>
+                <Services />
+              </ProtectedRoute>
+            }
+          />
           <Route path="/about" element={<About />} />
           <Route path="/knowledge" element={<KnowledgeBase />} />
 

@@ -5,6 +5,7 @@ import { useAuth } from '../../context/AuthContext';
 const defaultRedirectForRole = (role) => {
   if (role === 'doctor') return '/doctor-dashboard';
   if (role === 'patient') return '/dashboard';
+  if (role === 'admin') return '/admin-dashboard';
   return '/';
 };
 
@@ -30,4 +31,3 @@ export default function ProtectedRoute({ children, roles = [] }) {
 
   return children;
 }
-

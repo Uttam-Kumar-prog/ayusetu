@@ -33,7 +33,11 @@ export default function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-   const getRedirectForRole = (targetRole) => (targetRole === 'doctor' ? '/doctor-dashboard' : '/dashboard');
+   const getRedirectForRole = (targetRole) => {
+     if (targetRole === 'doctor') return '/doctor-dashboard';
+     if (targetRole === 'admin') return '/admin-dashboard';
+     return '/dashboard';
+   };
 
    // ===== 1. LOGIN HANDLER (Enters the Portal) =====
    const handleLogin = async (e) => {
@@ -117,7 +121,7 @@ export default function Login() {
               A
             </div>
             <span className="font-bold text-2xl text-slate-800 font-serif tracking-tight">
-              AyurSaaS
+              AyuSetu
             </span>
          </div>
       </div>
@@ -207,7 +211,7 @@ export default function Login() {
              <div className="bg-gradient-to-b from-blue-50 to-white backdrop-blur-xl border border-blue-200 shadow-2xl rounded-[2rem] p-8 relative overflow-hidden">
                 <div className="text-center mb-6">
                   <h2 className="text-2xl font-bold text-blue-900 font-serif">
-                     {role === 'doctor' ? 'Join Medical Network' : 'Join AyurSaaS'}
+                     {role === 'doctor' ? 'Join Medical Network' : 'Join AyuSetu'}
                   </h2>
                   <p className="text-slate-500 text-sm">
                      {role === 'doctor' ? 'Register your clinic.' : 'Create your patient profile.'}

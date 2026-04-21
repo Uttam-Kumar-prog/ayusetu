@@ -8,6 +8,26 @@ export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
+  const dashboardPath =
+    user?.role === 'doctor'
+      ? '/doctor-dashboard'
+      : user?.role === 'admin'
+      ? '/admin-dashboard'
+      : user?.role === 'patient'
+      ? '/dashboard'
+      : user?.role === 'pharmacy'
+      ? '/knowledge'
+      : '/';
+  const dashboardLabel =
+    user?.role === 'doctor'
+      ? 'Clinician Panel'
+      : user?.role === 'admin'
+      ? 'Admin Console'
+      : user?.role === 'patient'
+      ? 'My Dashboard'
+      : user?.role === 'pharmacy'
+      ? 'Pharmacy Portal'
+      : 'Dashboard';
 
   // 1. Hook Logic (ALWAYS call these first)
   useEffect(() => {
@@ -23,12 +43,28 @@ export default function Navbar() {
   // 2. Navigation Logic (Define this before returning)
   let navLinks = [];
   if (!user) {
-     navLinks = [{ name: "Home", path: "/" }];
+     navLinks = [
+        { name: "Home", path: "/" },
+        { name: "About", path: "/about" },
+        { name: "Knowledge", path: "/knowledge" },
+     ];
   } else if (user.role === 'doctor') {
      navLinks = [
         { name: "Portal", path: "/doctor-dashboard" },
         { name: "Patients", path: "/doctor-dashboard" },
         { name: "Resources", path: "/knowledge" },
+     ];
+  } else if (user.role === 'admin') {
+     navLinks = [
+        { name: "Home", path: "/" },
+        { name: "Admin", path: "/admin-dashboard" },
+        { name: "Services", path: "/services" },
+        { name: "Knowledge", path: "/knowledge" },
+     ];
+  } else if (user.role === 'pharmacy') {
+     navLinks = [
+        { name: "Home", path: "/" },
+        { name: "Knowledge", path: "/knowledge" },
      ];
   } else {
      navLinks = [
@@ -55,8 +91,9 @@ export default function Navbar() {
             {/* LOGO */}
             <Link to="/" className="flex items-center gap-2 group">
               <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg shadow-blue-200 group-hover:shadow-lg transition-all">A</div>
-              <span className="text-xl font-bold text-slate-800 font-serif group-hover:text-blue-700 transition-colors">AyurSaaS</span>
+              <span className="text-xl font-bold text-slate-800 font-serif group-hover:text-blue-700 transition-colors">AyuSetu</span>
               {user?.role === 'doctor' && <span className="bg-blue-100 text-blue-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ml-1">MD</span>}
+              {user?.role === 'admin' && <span className="bg-amber-100 text-amber-700 text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ml-1">ADM</span>}
             </Link>
 
             {/* DESKTOP LINKS */}
@@ -73,8 +110,8 @@ export default function Navbar() {
             <div className="hidden md:flex items-center gap-4">
               {user ? (
                 <>
-                  <Link to={user.role === 'doctor' ? "/doctor-dashboard" : "/dashboard"} className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors">
-                     {user.role === 'doctor' ? 'Clinician Panel' : 'My Dashboard'}
+                  <Link to={dashboardPath} className="text-sm font-semibold text-slate-600 hover:text-blue-700 transition-colors">
+                     {dashboardLabel}
                   </Link>
                   <button onClick={() => { logout(); navigate('/'); }} className="px-6 py-2.5 bg-slate-900 text-white text-sm font-semibold rounded-full shadow-lg hover:bg-slate-800 transition-all">
                     Logout

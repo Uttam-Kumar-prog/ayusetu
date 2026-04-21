@@ -76,7 +76,7 @@ export default function Landing() {
               <div className="w-64 bg-white border-r border-slate-100 flex flex-col p-5 hidden md:flex z-10">
                  <div className="flex items-center gap-2 mb-8">
                     <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold text-lg">A</div>
-                    <span className="font-bold text-slate-800 tracking-tight">AyurSaaS</span>
+                    <span className="font-bold text-slate-800 tracking-tight">AyuSetu</span>
                  </div>
                  
                  <div className="space-y-1">

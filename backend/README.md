@@ -82,6 +82,7 @@ Prescription, therapy, pharmacy
 Admin and analytics
 
 - GET /api/admin/pending-doctors
+- GET /api/admin/overview
 - PATCH /api/admin/verify-doctor/:id
 - GET /api/admin/system-health
 - GET /api/analytics/trends

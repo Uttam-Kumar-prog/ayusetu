@@ -25,7 +25,7 @@ export default function About() {
           </h1>
 
           <p className="max-w-2xl mx-auto text-xl text-slate-600 leading-relaxed">
-            AyurSaaS is a data-driven health platform that demystifies Ayurveda, making personalized holistic
+            AyuSetu is a data-driven health platform that demystifies Ayurveda, making personalized holistic
             wellness accessible, explainable, and actionable for everyone.
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function About() {
               </div>
               <h2 className="text-4xl font-bold text-slate-900 font-serif">Built by Vision & Code</h2>
               <p className="text-slate-600 mt-3 max-w-2xl mx-auto">
-                The people behind AyuSaaS, focused on making Ayurvedic care more intelligent, accessible, and
+                The people behind AyuSetu, focused on making Ayurvedic care more intelligent, accessible, and
                 practical.
               </p>
             </div>

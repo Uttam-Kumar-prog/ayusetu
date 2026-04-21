@@ -4,6 +4,7 @@ const {
   getPendingDoctors,
   verifyDoctor,
   getSystemHealth,
+  getAdminOverview,
 } = require('../controllers/adminController');
 const { protect, authorize } = require('../middleware/auth');
 const validate = require('../middleware/validate');
@@ -11,6 +12,7 @@ const validate = require('../middleware/validate');
 const router = express.Router();
 
 router.get('/pending-doctors', protect, authorize('admin'), getPendingDoctors);
+router.get('/overview', protect, authorize('admin'), getAdminOverview);
 router.patch(
   '/verify-doctor/:id',
   protect,

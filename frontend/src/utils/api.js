@@ -95,6 +95,7 @@ export const chatsAPI = {
 };
 
 export const adminAPI = {
+  overview: () => api.get('/admin/overview'),
   pendingDoctors: () => api.get('/admin/pending-doctors'),
   verifyDoctor: (id) => api.patch(`/admin/verify-doctor/${id}`),
   systemHealth: () => api.get('/admin/system-health'),

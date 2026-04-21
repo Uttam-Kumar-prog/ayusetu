@@ -18,6 +18,7 @@ It is designed for three main user groups:
 - [Repository Structure](#repository-structure)
 - [Quick Start (Local Development)](#quick-start-local-development)
 - [Environment Variables](#environment-variables)
+- [Vercel Deployment](#vercel-deployment)
 - [API Overview](#api-overview)
 - [Roles and Access Control](#roles-and-access-control)
 - [Operational Notes and Safety](#operational-notes-and-safety)
@@ -329,6 +330,74 @@ Key backend vars:
 - `OPENAI_API_KEY` (optional)
 - `OPENAI_MODEL` (optional)
 - `OPENAI_BASE_URL` (optional)
+
+## Vercel Deployment
+
+Deploy as two Vercel projects:
+- `backend` as Serverless API
+- `frontend` as Vite web app
+
+### Files added for Vercel
+
+- `backend/vercel.json`
+- `backend/api/index.js`
+- `frontend/vercel.json`
+
+### Scripts added
+
+- `frontend/package.json`
+  - `vercel-build`
+- `backend/package.json`
+  - `vercel-build`
+
+### 1) Deploy backend project on Vercel
+
+1. In Vercel dashboard, create new project from this repo.
+2. Set **Root Directory** to `backend`.
+3. Framework preset: `Other`.
+4. Build command: `npm run vercel-build`.
+5. Output directory: leave empty.
+6. Add environment variables:
+   - `MONGO_URI`
+   - `JWT_SECRET`
+   - `JWT_EXPIRES_IN`
+   - `CORS_ORIGIN` (set later to frontend domain)
+   - `WEB_URL` (frontend domain)
+   - `NODE_ENV=production`
+   - Optional: `OPENAI_API_KEY`, `OPENAI_MODEL`, `OPENAI_BASE_URL`
+7. Deploy and copy backend URL, for example:
+   - `https://ayu-backend.vercel.app`
+
+Health check after deploy:
+- `https://ayu-backend.vercel.app/health`
+
+### 2) Deploy frontend project on Vercel
+
+1. Create another Vercel project from same repo.
+2. Set **Root Directory** to `frontend`.
+3. Framework preset: `Vite`.
+4. Build command: `npm run vercel-build`.
+5. Output directory: `dist`.
+6. Add environment variable:
+   - `VITE_API_URL=https://<your-backend-domain>/api`
+7. Deploy and copy frontend URL, for example:
+   - `https://ayu-frontend.vercel.app`
+
+### 3) Final CORS and web URL update
+
+After frontend deploy, update backend environment variables:
+- `CORS_ORIGIN=https://<your-frontend-domain>`
+- `WEB_URL=https://<your-frontend-domain>`
+
+Redeploy backend once after updating these values.
+
+### 4) Verify production flow
+
+- Open frontend URL.
+- Register/login.
+- Check symptom submission.
+- Check chatbot API calls.
+- Check doctor list and appointment APIs.
 
 ## API Overview
 
