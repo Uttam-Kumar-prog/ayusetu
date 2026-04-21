@@ -103,12 +103,16 @@ exports.bookAppointment = asyncHandler(async (req, res) => {
 });
 
 exports.listMyAppointments = asyncHandler(async (req, res) => {
-  const query = {};
+  let query = null;
 
   if (req.user.role === 'patient') {
-    query.patientId = req.user._id;
+    query = { patientId: req.user._id };
   } else if (req.user.role === 'doctor') {
-    query.doctorId = req.user._id;
+    query = { doctorId: req.user._id };
+  } else if (req.user.role === 'admin') {
+    query = {};
+  } else {
+    throw new ApiError(403, 'This role is not allowed to access appointments');
   }
 
   const appointments = await Appointment.find(query)

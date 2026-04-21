@@ -5,6 +5,7 @@ import { AuthProvider } from "./context/AuthContext";
 // Components
 import Navbar from "./components/common/Navbar";
 import ChatAssistantWidget from "./components/chatbot/ChatAssistantWidget";
+import ProtectedRoute from "./components/common/ProtectedRoute";
 
 // Pages
 import Landing from "./pages/Landing";
@@ -33,17 +34,66 @@ function App() {
           <Route path="/login" element={<Login />} />
           
           {/* Patient App Features */}
-          <Route path="/symptoms" element={<SymptomInput />} />
-          <Route path="/results" element={<Results />} />
-          <Route path="/dashboard" element={<Dashboard />} />
+          <Route
+            path="/symptoms"
+            element={
+              <ProtectedRoute roles={["patient"]}>
+                <SymptomInput />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/results"
+            element={
+              <ProtectedRoute roles={["patient"]}>
+                <Results />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/dashboard"
+            element={
+              <ProtectedRoute roles={["patient"]}>
+                <Dashboard />
+              </ProtectedRoute>
+            }
+          />
           
           {/* DOCTOR SECTION ROUTES */}
-          <Route path="/doctors" element={<DoctorList />} />
-          <Route path="/doctors/:id" element={<DoctorProfile />} />
+          <Route
+            path="/doctors"
+            element={
+              <ProtectedRoute roles={["patient"]}>
+                <DoctorList />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/doctors/:id"
+            element={
+              <ProtectedRoute roles={["patient"]}>
+                <DoctorProfile />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Doctor Portal */}
-          <Route path="/doctor-dashboard" element={<DoctorDashboard />} />
-          <Route path="/consultation/:roomId" element={<ConsultationRoom />} />
+          <Route
+            path="/doctor-dashboard"
+            element={
+              <ProtectedRoute roles={["doctor"]}>
+                <DoctorDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/consultation/:roomId"
+            element={
+              <ProtectedRoute roles={["patient", "doctor", "admin"]}>
+                <ConsultationRoom />
+              </ProtectedRoute>
+            }
+          />
           
           {/* Informational Pages */}
           <Route path="/about" element={<About />} />

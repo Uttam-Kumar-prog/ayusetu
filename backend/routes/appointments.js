@@ -27,7 +27,7 @@ router.post(
   validate,
   bookAppointment
 );
-router.get('/mine', protect, listMyAppointments);
+router.get('/mine', protect, authorize('patient', 'doctor', 'admin'), listMyAppointments);
 router.get(
   '/room/:roomId/access',
   protect,
