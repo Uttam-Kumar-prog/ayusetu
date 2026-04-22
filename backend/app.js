@@ -4,6 +4,7 @@ const helmet = require('helmet');
 const compression = require('compression');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const connectDB = require('./config/db');
 const { notFound, errorHandler } = require('./middleware/errorHandler');
 
 const app = express();
@@ -38,6 +39,22 @@ app.get('/health', (req, res) => {
     message: 'AyuSetu backend is healthy',
     timestamp: new Date().toISOString(),
   });
+});
+
+// Runtime-safe DB readiness guard.
+// This ensures requests do not hit mongoose models before a connection exists,
+// even when the deployment runtime boots app.js directly.
+app.use(async (req, res, next) => {
+  if (req.path === '/health') {
+    return next();
+  }
+
+  try {
+    await connectDB();
+    return next();
+  } catch (error) {
+    return next(error);
+  }
 });
 
 app.use(globalLimiter);
