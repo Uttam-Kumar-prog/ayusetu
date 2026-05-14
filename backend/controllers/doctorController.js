@@ -4,6 +4,8 @@ const asyncHandler = require('../utils/asyncHandler');
 const ApiError = require('../utils/ApiError');
 const { getPagination } = require('../utils/pagination');
 
+const escapeRegex = (value = '') => String(value).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const parseDateTime = (date, time) => {
   return new Date(`${date}T${time}:00+05:30`);
 };
@@ -18,7 +20,7 @@ exports.listDoctors = asyncHandler(async (req, res) => {
     'doctorProfile.verifiedByAdmin': true,
   };
 
-  if (specialty) query['doctorProfile.specialty'] = specialty;
+  if (specialty) query['doctorProfile.specialty'] = new RegExp(escapeRegex(specialty), 'i');
   if (location) query['doctorProfile.location'] = new RegExp(location, 'i');
   if (language) query['doctorProfile.languages'] = language;
   if (minExperience) query['doctorProfile.experienceYears'] = { $gte: Number(minExperience) };

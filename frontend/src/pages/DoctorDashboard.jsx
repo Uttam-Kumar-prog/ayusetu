@@ -1,7 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { appointmentsAPI } from '../utils/api';
+import { appointmentsAPI, doctorsAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
+
+const slotOptions = ['09:00', '10:00', '11:00', '12:00', '14:00', '15:00', '16:00', '17:00'];
+
+const toDateValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
 
 export default function DoctorDashboard() {
   const { user } = useAuth();
@@ -16,6 +25,12 @@ export default function DoctorDashboard() {
   const [caseSummary, setCaseSummary] = useState(null);
   const [caseSummaryLoading, setCaseSummaryLoading] = useState(false);
   const [caseSummaryError, setCaseSummaryError] = useState('');
+  const [availabilityDate, setAvailabilityDate] = useState(toDateValue(new Date()));
+  const [availabilitySlots, setAvailabilitySlots] = useState([]);
+  const [availabilityLoading, setAvailabilityLoading] = useState(false);
+  const [availabilitySaving, setAvailabilitySaving] = useState(false);
+  const [availabilityError, setAvailabilityError] = useState('');
+  const [availabilitySuccess, setAvailabilitySuccess] = useState('');
 
   useEffect(() => {
     const fetchAppointments = async () => {
@@ -35,6 +50,32 @@ export default function DoctorDashboard() {
 
     fetchAppointments();
   }, []);
+
+  useEffect(() => {
+    const loadAvailability = async () => {
+      if (!user?._id) return;
+
+      setAvailabilityLoading(true);
+      setAvailabilityError('');
+      setAvailabilitySuccess('');
+
+      try {
+        const { data } = await doctorsAPI.getAvailability(user._id, { date: availabilityDate });
+        const firstEntry = (data?.availability || [])[0];
+        const openSlots = (firstEntry?.slots || [])
+          .filter((slot) => slot?.status === 'AVAILABLE' && slot?.time)
+          .map((slot) => slot.time);
+        setAvailabilitySlots(openSlots);
+      } catch (apiError) {
+        setAvailabilitySlots([]);
+        setAvailabilityError(apiError?.response?.data?.message || 'Could not load availability for this date.');
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    };
+
+    loadAvailability();
+  }, [availabilityDate, user?._id]);
 
   const stats = useMemo(() => {
     const today = appointments.length;
@@ -112,6 +153,42 @@ export default function DoctorDashboard() {
     setCaseSummaryLoading(false);
   };
 
+  const toggleSlot = (time) => {
+    setAvailabilitySuccess('');
+    setAvailabilityError('');
+    setAvailabilitySlots((previous) =>
+      previous.includes(time)
+        ? previous.filter((item) => item !== time)
+        : [...previous, time].sort((a, b) => a.localeCompare(b))
+    );
+  };
+
+  const saveAvailability = async () => {
+    if (!availabilityDate) return;
+
+    if (availabilitySlots.length === 0) {
+      setAvailabilityError('Please select at least one slot before saving.');
+      setAvailabilitySuccess('');
+      return;
+    }
+
+    setAvailabilitySaving(true);
+    setAvailabilityError('');
+    setAvailabilitySuccess('');
+
+    try {
+      await doctorsAPI.updateMyAvailability({
+        date: availabilityDate,
+        slots: availabilitySlots.map((time) => ({ time })),
+      });
+      setAvailabilitySuccess(`Availability updated for ${availabilityDate}.`);
+    } catch (apiError) {
+      setAvailabilityError(apiError?.response?.data?.message || 'Could not save availability.');
+    } finally {
+      setAvailabilitySaving(false);
+    }
+  };
+
   return (
     <div className="min-h-screen pt-28 pb-20 px-6 bg-slate-50 font-sans selection:bg-blue-100 selection:text-blue-900">
       <div className="fixed inset-0 z-0 pointer-events-none">
@@ -143,6 +220,63 @@ export default function DoctorDashboard() {
               <h3 className={`text-3xl font-bold mt-1 ${stat.color}`}>{stat.val}</h3>
             </div>
           ))}
+        </div>
+
+        <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden p-8 mb-10">
+          <h2 className="text-2xl font-bold text-slate-800 font-serif mb-2">Manage Availability</h2>
+          <p className="text-slate-500 mb-6 text-sm">
+            Publish open slots so patients can see and book your appointments.
+          </p>
+
+          <div className="grid lg:grid-cols-[240px_1fr] gap-6 items-start">
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Date</label>
+              <input
+                type="date"
+                min={toDateValue(new Date())}
+                value={availabilityDate}
+                onChange={(e) => setAvailabilityDate(e.target.value)}
+                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:border-blue-500"
+              />
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Select Slots</label>
+              <div className="flex flex-wrap gap-2">
+                {slotOptions.map((time) => {
+                  const isSelected = availabilitySlots.includes(time);
+                  return (
+                    <button
+                      key={time}
+                      type="button"
+                      onClick={() => toggleSlot(time)}
+                      className={`px-4 py-2 rounded-lg text-sm font-bold transition-all border ${
+                        isSelected
+                          ? 'bg-blue-600 text-white border-blue-600 shadow-md'
+                          : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300'
+                      }`}
+                    >
+                      {time}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-5 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={saveAvailability}
+              disabled={availabilitySaving || availabilityLoading}
+              className="px-5 py-2.5 bg-blue-600 text-white text-sm font-bold rounded-xl hover:bg-blue-700 disabled:opacity-50"
+            >
+              {availabilitySaving ? 'Saving...' : 'Save Availability'}
+            </button>
+            {availabilityLoading ? <span className="text-sm text-slate-500">Loading saved slots...</span> : null}
+            {availabilitySuccess ? <span className="text-sm text-emerald-600 font-semibold">{availabilitySuccess}</span> : null}
+            {availabilityError ? <span className="text-sm text-rose-600 font-semibold">{availabilityError}</span> : null}
+          </div>
         </div>
 
         <div className="bg-white rounded-[2.5rem] shadow-xl border border-slate-200 overflow-hidden min-h-[400px] p-8">

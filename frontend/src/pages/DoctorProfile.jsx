@@ -3,7 +3,37 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { appointmentsAPI, doctorsAPI } from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
-const toDateValue = (date) => date.toISOString().slice(0, 10);
+const toDateValue = (date) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+const getAvailableDateMap = (availability = []) => {
+  const dateMap = {};
+  availability.forEach((entry) => {
+    const date = entry?.date;
+    if (!date) return;
+
+    const openSlots = (entry?.slots || [])
+      .filter((slot) => slot?.status === 'AVAILABLE' && slot?.time)
+      .map((slot) => slot.time);
+
+    if (openSlots.length > 0) {
+      dateMap[date] = openSlots;
+    }
+  });
+  return dateMap;
+};
+
+const getNextAvailableDate = (availableDateMap, preferredDate) => {
+  if (availableDateMap[preferredDate]?.length) return preferredDate;
+
+  const availableDates = Object.keys(availableDateMap).sort((a, b) => a.localeCompare(b));
+  const nextUpcoming = availableDates.find((date) => date >= preferredDate);
+  return nextUpcoming || availableDates[0] || preferredDate;
+};
 
 export default function DoctorProfile() {
   const { id } = useParams();
@@ -49,11 +79,19 @@ export default function DoctorProfile() {
     fetchDoctor();
   }, [id]);
 
-  const slotsForSelectedDate = useMemo(() => {
-    const dateEntry = availability.find((entry) => entry.date === selectedDate);
-    const openSlots = (dateEntry?.slots || []).filter((slot) => slot.status === 'AVAILABLE');
-    return openSlots.map((slot) => slot.time);
-  }, [availability, selectedDate]);
+  const availableDateMap = useMemo(() => getAvailableDateMap(availability), [availability]);
+
+  const slotsForSelectedDate = useMemo(
+    () => availableDateMap[selectedDate] || [],
+    [availableDateMap, selectedDate]
+  );
+
+  const hasAnySlots = Object.keys(availableDateMap).length > 0;
+
+  useEffect(() => {
+    const today = toDateValue(new Date());
+    setSelectedDate((current) => getNextAvailableDate(availableDateMap, current || today));
+  }, [availableDateMap]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -98,7 +136,7 @@ export default function DoctorProfile() {
     setTimeout(() => {
       setBookingStep(1);
       setSelectedSlot('');
-      setSelectedDate(toDateValue(new Date()));
+      setSelectedDate(getNextAvailableDate(availableDateMap, toDateValue(new Date())));
       setFormData({ reason: '' });
     }, 200);
   };
@@ -197,7 +235,7 @@ export default function DoctorProfile() {
                 </div>
                 <div className="flex justify-between items-center p-3 hover:bg-slate-50 rounded-lg transition-colors">
                   <span className="font-medium text-slate-600">Open slots loaded</span>
-                  <span className="text-sm font-bold text-blue-600">{availability.length} day(s)</span>
+                  <span className="text-sm font-bold text-blue-600">{Object.keys(availableDateMap).length} day(s)</span>
                 </div>
               </div>
             </div>
@@ -226,6 +264,7 @@ export default function DoctorProfile() {
                         type="date"
                         required
                         value={selectedDate}
+                        min={toDateValue(new Date())}
                         onChange={(e) => {
                           setSelectedDate(e.target.value);
                           setSelectedSlot('');
@@ -237,7 +276,7 @@ export default function DoctorProfile() {
                     <div>
                       <label className="block text-xs font-bold text-slate-500 uppercase mb-2">Available Slots</label>
                       <div className="flex flex-wrap gap-2">
-                        {slotsForSelectedDate.length ? (
+                        {slotsForSelectedDate.length > 0 ? (
                           slotsForSelectedDate.map((slot) => (
                             <button
                               key={slot}
@@ -253,7 +292,11 @@ export default function DoctorProfile() {
                             </button>
                           ))
                         ) : (
-                          <span className="text-sm text-slate-500">No available slots for this date.</span>
+                          <span className="text-sm text-slate-500">
+                            {hasAnySlots
+                              ? 'No available slots for this date. Please choose another date.'
+                              : 'This doctor has not published any slots yet. Doctor can add slots from Doctor Dashboard.'}
+                          </span>
                         )}
                       </div>
                     </div>
